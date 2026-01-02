@@ -95,3 +95,32 @@ class Dense:
 		# -- APPLY WEIGHTS AND BIASES AND APPLY ACTIVATION
 		z = inputs @ self.weights + self.bias 
 		return self.activation.forward(z)
+
+	def backward(self, grad_output: np.ndarray, learning_rate: float = 0.01):
+		'''
+		Performs backward propagation to update parameters.
+
+		Args:
+			grad_output: The gradient of the loss with respect to this layer's output (dL/dA)
+			learning_rate: The step size for updating weights (Basic SGD).
+
+		Returns:
+			grad_input: The gradient of the loss with respect to this layer's input.
+							This is passed to the previous layer
+
+		'''
+		# -- CALCULATE GRADIENT OF THE ACTIVATION (dZ) --
+		# Element-wise multiply incoming gradient by the derivative of the activation
+		dz = grad_output * self.activation.derivative()
+
+		# -- CALCULATE GRADIENT FOR WEIGHTS (dW) AND BIASES (db)
+		dw = self.input_cache.T @ dz
+
+		db = np.sum(dz, axis=0, keepdims=True)
+
+		grad_input = dz @ self.weights.T 
+
+		self.weights -= learning_rate * dw
+		self.bias -= learning_rate * db 
+
+		return grad_input
